@@ -1,0 +1,1 @@
+# findikhane-nuxt-app
