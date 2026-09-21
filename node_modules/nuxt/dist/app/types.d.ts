@@ -1,0 +1,232 @@
+import { Hookable } from "hookable";
+import { H3Error, H3Event } from "@nuxt/nitro-server/h3";
+import { SerializableHead } from "@unhead/vue";
+import { UseHeadInput, VueHeadClient } from "@unhead/vue/types";
+import { SSRHeadPayload } from "@unhead/vue/server";
+import { SSRContext, createRenderer } from "vue-bundle-renderer/runtime";
+import { RenderResponse } from "nitropack/types";
+import { RuntimeConfig } from "nuxt/schema";
+//#region src/app/types.d.ts
+type HookResult = Promise<void> | void;
+interface NuxtAppLiterals {
+  [key: string]: string;
+}
+interface PluginMeta {
+  name?: string;
+  enforce?: 'pre' | 'default' | 'post';
+  /**
+   * Await for other named plugins to finish before running this plugin.
+   */
+  dependsOn?: NuxtAppLiterals['pluginName'][];
+  /**
+   * This allows more granular control over plugin order and should only be used by advanced users.
+   * It overrides the value of `enforce` and is used to sort plugins.
+   */
+  order?: number;
+}
+/**
+ * Create a NuxtLink component with given options as defaults.
+ *
+ * Declared without reference to `vue-router` types so this leaf does not
+ * force a (possibly duplicated) `vue-router` instance into consuming
+ * programs; the fields mirror `RouterLinkProps['activeClass' |
+ * 'exactActiveClass']` and `NuxtLinkProps['prefetch' | 'prefetchedClass' |
+ * 'prefetchOn']` in `../components/nuxt-link.ts`.
+ * @see https://nuxt.com/docs/4.x/api/components/nuxt-link
+ */
+interface NuxtLinkOptions {
+  /**
+   * The name of the component.
+   * @default "NuxtLink"
+   */
+  componentName?: string;
+  /**
+   * A default `rel` attribute value applied on external links. Defaults to `"noopener noreferrer"`. Set it to `""` to disable.
+   */
+  externalRelAttribute?: string | null;
+  /**
+   * An option to either add or remove trailing slashes in the `href`.
+   * If unset or not matching the valid values `append` or `remove`, it will be ignored.
+   */
+  trailingSlash?: 'append' | 'remove';
+  /** A class to apply to active links. */
+  activeClass?: string;
+  /** A class to apply to exact active links. */
+  exactActiveClass?: string;
+  /** A class to apply to links that have been prefetched. */
+  prefetchedClass?: string;
+  /** When enabled will prefetch middleware, layouts and payloads of links in the viewport. */
+  prefetch?: boolean;
+  /**
+   * Allows controlling default setting for when to prefetch links. By default, prefetch is triggered only on visibility.
+   */
+  prefetchOn?: Partial<{
+    visibility: boolean;
+    interaction: boolean;
+  }>;
+}
+type AppRenderedContext = {
+  ssrContext: NuxtSSRContext | undefined;
+  renderResult: null | Awaited<ReturnType<ReturnType<typeof createRenderer>['renderToString']>>;
+};
+/**
+ * The runtime app hooks fired from the server runtime. The full
+ * `RuntimeNuxtHooks` interface in `./nuxt.ts` extends this with the
+ * client-side hooks, whose signatures need the DOM lib.
+ */
+interface NuxtServerRuntimeHooks {
+  'app:error': (err: any) => HookResult;
+  'app:rendered': (ctx: AppRenderedContext) => HookResult;
+}
+/**
+ * The part of the runtime Nuxt app addressable from the server runtime
+ * (`ssrContext.nuxt`). The full `NuxtApp` in `./nuxt.ts` is assignable to
+ * this shape; `hooks` is deliberately narrowed to the members the server
+ * runtime calls, as `Hookable` instantiations over different hook maps are
+ * not mutually assignable.
+ */
+interface NuxtServerApp {
+  hooks: Pick<Hookable<NuxtServerRuntimeHooks>, 'hook' | 'callHook'>;
+  payload: NuxtPayload;
+  ssrContext?: NuxtSSRContext;
+  [key: string]: unknown;
+}
+/**
+ * Type-only mirror of the `NuxtError` interface in `./composables/error.ts`,
+ * which remains the canonical `NuxtError` type exported from `nuxt/app` /
+ * `#app`. Duplicated here (rather than imported) so this leaf stays free of
+ * the DOM-dependent module graph reachable from `./composables/error.ts`.
+ */
+interface NuxtError<DataT = unknown> extends Omit<H3Error<DataT>, 'statusCode' | 'statusMessage'>, Error {
+  readonly __nuxt_error?: true;
+  error?: true;
+  status?: number;
+  statusText?: string;
+  /** @deprecated Use `status` */
+  statusCode?: H3Error<DataT>['statusCode'];
+  /** @deprecated Use `statusText` */
+  statusMessage?: H3Error<DataT>['statusMessage'];
+}
+interface NuxtPayload {
+  path?: string;
+  serverRendered?: boolean;
+  prerenderedAt?: number;
+  data: Record<string, any>;
+  state: Record<string, any>;
+  once: Set<string>;
+  config?: Pick<RuntimeConfig, 'public' | 'app'>;
+  error?: NuxtError | undefined;
+  _errors: Record<string, NuxtError | undefined>;
+  /**
+   * Forwarded `<link rel="preload">` / `<link rel="modulepreload">` hints from the destination route, populated when `experimental.prefetchPreloadTags` is enabled.
+   * @internal
+   */
+  prefetchLinks?: Array<Record<string, string | boolean>>;
+  [key: string]: unknown;
+}
+interface NuxtSSRContext extends SSRContext {
+  url: string;
+  event: H3Event;
+  runtimeConfig: RuntimeConfig;
+  noSSR: boolean;
+  /** whether we are rendering an SSR error */
+  error?: boolean;
+  nuxt: NuxtServerApp;
+  payload: Partial<NuxtPayload>;
+  head: VueHeadClient<UseHeadInput, SSRHeadPayload>;
+  /** This is used solely to render runtime config with SPA renderer. */
+  config?: Pick<RuntimeConfig, 'public' | 'app'>;
+  teleports?: Record<string, string>;
+  islandContext?: NuxtIslandContext;
+  /** @internal */
+  ['~renderResponse']?: Partial<RenderResponse>;
+  /** @internal */
+  ['~payloadReducers']: Record<string, (data: any) => any>;
+  /** @internal */
+  ['~sharedPrerenderCache']?: {
+    get<T = unknown>(key: string): Promise<T> | undefined;
+    set<T>(key: string, value: Promise<T>): Promise<void>;
+  };
+  /** @internal */
+  ['~preloadManifest']?: boolean;
+  /** @internal */
+  ['~lazyHydratedModules']?: Set<string>;
+  /** @internal */
+  ['~neverHydratedModules']?: Set<string>;
+}
+interface NuxtIslandSlotResponse {
+  props: Array<unknown>;
+  fallback?: string;
+}
+interface NuxtIslandClientResponse {
+  html: string;
+  props: unknown;
+  chunk: string;
+  slots?: Record<string, string>;
+  uid?: string;
+}
+interface NuxtIslandContext {
+  id?: string;
+  name: string;
+  props?: Record<string, any>;
+  url: string;
+  slots: Record<string, Omit<NuxtIslandSlotResponse, 'fallback'>>;
+  components: Record<string, Omit<NuxtIslandClientResponse, 'html'>>;
+}
+interface NuxtIslandResponse {
+  id?: string;
+  html: string;
+  head: SerializableHead;
+  props?: Record<string, Record<string, any>>;
+  components?: Record<string, NuxtIslandClientResponse>;
+  slots?: Record<string, NuxtIslandSlotResponse>;
+}
+interface NuxtRenderHTMLContext {
+  htmlAttrs: string[];
+  head: string[];
+  bodyAttrs: string[];
+  bodyPrepend: string[];
+  body: string[];
+  bodyAppend: string[];
+}
+/**
+ * Context passed to the `render:html:chunk` hook, fired for each chunk
+ * produced by Vue's renderer (after head-suspense pushes have been
+ * injected) before it is enqueued. Mutate `chunk` to transform the bytes.
+ */
+interface NuxtRenderChunkContext {
+  chunk: Uint8Array;
+  index: number;
+}
+/**
+ * Context passed to the `render:html:close` hook, fired after the Vue
+ * stream completes, before the closing tags. Mutate `bodyAppend` to
+ * inject final scripts/markup.
+ */
+interface NuxtRenderCloseContext {
+  bodyAppend: string[];
+}
+/**
+ * Context passed to the `render:route` hook, fired once per request
+ * before rendering begins (streaming enabled or not).
+ */
+interface NuxtRenderRouteContext {
+  /**
+   * Whether SSR streaming is possible for this route. `false` when a
+   * buffered-only feature is in play (component islands, ISR/SWR cache,
+   * `noScripts`, redirects) or SSR streaming is disabled. Read-only: the
+   * renderer enforces this regardless of `prefersStream`.
+   */
+  readonly canStream: boolean;
+  /**
+   * Whether streaming is preferred for this request. Pre-computed from the
+   * route's `streaming` rule and bot detection. Mutate it to override the
+   * decision at runtime (e.g. set `false` to disable streaming for
+   * authenticated users). The renderer streams only when
+   * `canStream && prefersStream`, so setting it `true` on a non-streamable
+   * route is a no-op.
+   */
+  prefersStream: boolean;
+}
+//#endregion
+export { NuxtAppLiterals, NuxtError, NuxtIslandClientResponse, NuxtIslandContext, NuxtIslandResponse, NuxtIslandSlotResponse, NuxtLinkOptions, NuxtPayload, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext, NuxtSSRContext, NuxtServerApp, NuxtServerRuntimeHooks, PluginMeta };

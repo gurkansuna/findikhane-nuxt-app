@@ -1,0 +1,35 @@
+import { applyPlugin, applyPlugins, callWithNuxt, createNuxtApp, defineAppConfig, defineNuxtPlugin, definePayloadPlugin, isNuxtPlugin, registerPluginHooks, tryUseNuxtApp, useNuxtApp, useRuntimeConfig } from "./nuxt.js";
+import { _getAppConfig, updateAppConfig, useAppConfig } from "./config.js";
+import { abortNavigation, addRouteMiddleware, defineNuxtRouteMiddleware, navigateTo, onBeforeRouteLeave, onBeforeRouteUpdate, setPageLayout, useRoute, useRouter } from "./composables/router.js";
+import { clearError, createError, isNuxtError, showError, useError } from "./composables/error.js";
+import { hashKey } from "./utils/hash.js";
+import { injectHead, useHead, useHeadSafe, useSeoMeta, useServerHead, useServerHeadSafe, useServerSeoMeta } from "../head/runtime/composables.js";
+import { cancelIdleCallback, requestIdleCallback } from "./compat/idle-callback.js";
+import { onNuxtReady } from "./composables/ready.js";
+import { clearNuxtData, refreshNuxtData, useAsyncData, useLazyAsyncData, useNuxtData } from "./composables/asyncData.js";
+import { defineNuxtComponent } from "./composables/component.js";
+import { useHydration } from "./composables/hydrate.js";
+import { callOnce } from "./composables/once.js";
+import { clearNuxtState, useState } from "./composables/state.js";
+import { onPrehydrate, prerenderRoutes, setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders, useResponseHeader } from "./composables/ssr.js";
+import { useFetch, useLazyFetch } from "./composables/fetch.js";
+import { refreshCookie, useCookie } from "./composables/cookie.js";
+import { prefetchComponents, preloadComponents, preloadRouteComponents } from "./composables/preload.js";
+import { getAppManifest, getRouteRules } from "./composables/manifest.js";
+import { definePayloadReducer, definePayloadReviver, isPrerendered, loadPayload, preloadPayload } from "./composables/payload.js";
+import { reloadNuxtApp } from "./composables/chunk.js";
+import { useRequestURL } from "./composables/url.js";
+import { usePreviewMode } from "./composables/preview.js";
+import { useId } from "./composables/id.js";
+import { useRouteAnnouncer } from "./composables/route-announcer.js";
+import { useAnnouncer } from "./composables/announcer.js";
+import { useRuntimeHook } from "./composables/runtime-hook.js";
+import "./composables/index.js";
+import { defineNuxtLink } from "./components/nuxt-link.js";
+import "./components/index.js";
+import { getIslandHash, serializeIslandProps } from "./island-hash.js";
+//#region src/app/index.ts
+const isVue2 = false;
+const isVue3 = true;
+//#endregion
+export { _getAppConfig, abortNavigation, addRouteMiddleware, applyPlugin, applyPlugins, callOnce, callWithNuxt, cancelIdleCallback, clearError, clearNuxtData, clearNuxtState, createError, createNuxtApp, defineAppConfig, defineNuxtComponent, defineNuxtLink, defineNuxtPlugin, defineNuxtRouteMiddleware, definePayloadPlugin, definePayloadReducer, definePayloadReviver, getAppManifest, getIslandHash, getRouteRules, hashKey, injectHead, isNuxtError, isNuxtPlugin, isPrerendered, isVue2, isVue3, loadPayload, navigateTo, onBeforeRouteLeave, onBeforeRouteUpdate, onNuxtReady, onPrehydrate, prefetchComponents, preloadComponents, preloadPayload, preloadRouteComponents, prerenderRoutes, refreshCookie, refreshNuxtData, registerPluginHooks, reloadNuxtApp, requestIdleCallback, serializeIslandProps, setPageLayout, setResponseStatus, showError, tryUseNuxtApp, updateAppConfig, useAnnouncer, useAppConfig, useAsyncData, useCookie, useError, useFetch, useHead, useHeadSafe, useHydration, useId, useLazyAsyncData, useLazyFetch, useNuxtApp, useNuxtData, usePreviewMode, useRequestEvent, useRequestFetch, useRequestHeaders, useRequestURL, useResponseHeader, useRoute, useRouteAnnouncer, useRouter, useRuntimeConfig, useRuntimeHook, useSeoMeta, useServerHead, useServerHeadSafe, useServerSeoMeta, useState };

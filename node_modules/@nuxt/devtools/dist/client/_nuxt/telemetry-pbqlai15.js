@@ -1,0 +1,1 @@
+import{h as e,p as t}from"./client-kw9rd8gy.js";import{t as n}from"./storage-options-h4ted7ut.js";var r=n(`behavior`).telemetry;function i(n,i,a=!1){r.value!==!1&&e.telemetryEvent({event:n,browser:t.browser.name,browserVersion:t.browser.version,os:t.os.name,osVersion:t.os.version,deviceType:t.device.type,inPopup:!!window.__NUXT_DEVTOOLS_IS_POPUP__,...i},a)}export{r as n,i as t};

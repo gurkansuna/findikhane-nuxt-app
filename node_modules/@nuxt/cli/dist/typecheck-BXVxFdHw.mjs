@@ -1,0 +1,291 @@
+import { a as legacyRootDirArgs, i as extendsArgs, n as dotEnvArgs, o as logLevelArgs, t as cwdArgs } from "./_shared-B6XhZQ-m.mjs";
+import { n as logger } from "./logger-C1qVsppt.mjs";
+import { i as withNodePath, t as loadKit } from "./kit-gdbmFADU.mjs";
+import process from "node:process";
+import { defineCommand } from "citty";
+import { colors } from "consola/utils";
+import { hasTTY } from "std-env";
+import { cancel, confirm, isCancel, select, spinner } from "@clack/prompts";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, resolve } from "pathe";
+import { writeFile } from "node:fs/promises";
+import { resolveModulePath } from "exsolve";
+import { readPackageJSON, readTSConfig } from "pkg-types";
+import { x } from "tinyexec";
+import { addDevDependency, detectPackageManager } from "nypm";
+//#region ../nuxi/src/commands/typecheck.ts
+const GOLAR_CONFIG_FILES = [
+	"golar.config.js",
+	"golar.config.ts",
+	"golar.config.mjs",
+	"golar.config.mts",
+	"golar.config.cjs",
+	"golar.config.cts"
+];
+const GOLAR_CONFIG_TEMPLATE = `import { defineConfig } from 'golar/unstable'
+import '@golar/vue'
+
+export default defineConfig({})
+`;
+const TYPE_CHECKERS = {
+	"vue-tsc": {
+		label: "vue-tsc",
+		hint: "Vue's official TypeScript checker",
+		packages: ["typescript", "vue-tsc"],
+		resolve(cwd, { cache = true } = {}) {
+			const from = withNodePath(cwd);
+			const typescript = resolveModulePath("typescript", {
+				from,
+				try: true,
+				cache
+			});
+			const bin = resolveModulePath("vue-tsc/bin/vue-tsc.js", {
+				from,
+				try: true,
+				cache
+			});
+			return {
+				bin: bin ?? void 0,
+				missing: [...!typescript ? ["typescript"] : [], ...!bin ? ["vue-tsc"] : []]
+			};
+		},
+		args: (supportsProjects) => supportsProjects ? ["-b", "--noEmit"] : ["--noEmit"]
+	},
+	"golar": {
+		label: "Golar",
+		hint: "Native-speed type-checking powered by typescript-go",
+		packages: ["golar", "@golar/vue"],
+		docs: "https://golar.dev/languages/vue/",
+		configFiles: GOLAR_CONFIG_FILES,
+		configNote: `Golar also requires a ${colors.cyan("golar.config.ts")} file. One will be created automatically the first time Golar is used.`,
+		resolve(cwd, { cache = true } = {}) {
+			const bin = resolveGolarBin(cwd);
+			const vuePlugin = resolveModulePath("@golar/vue", {
+				from: withNodePath(cwd),
+				try: true,
+				cache
+			});
+			return {
+				bin,
+				missing: [...!bin ? ["golar"] : [], ...!vuePlugin ? ["@golar/vue"] : []]
+			};
+		},
+		args: (supportsProjects) => supportsProjects ? [
+			"tsc",
+			"--build",
+			"--noEmit"
+		] : ["tsc", "--noEmit"],
+		ensureConfig: ensureGolarConfig
+	}
+};
+const CHECKER_PRIORITY = Object.keys(TYPE_CHECKERS);
+var typecheck_default = defineCommand({
+	meta: {
+		name: "typecheck",
+		description: "Runs type-checking throughout your app using `vue-tsc` or Golar."
+	},
+	args: {
+		...cwdArgs,
+		...logLevelArgs,
+		...dotEnvArgs,
+		...extendsArgs,
+		...legacyRootDirArgs,
+		checker: {
+			type: "string",
+			description: "Type checker to use (`vue-tsc` or `golar`)"
+		}
+	},
+	async run(ctx) {
+		process.env.NODE_ENV = process.env.NODE_ENV || "production";
+		const cwd = resolve(ctx.args.cwd || ctx.args.rootDir);
+		const checkerArg = ctx.args.checker;
+		if (checkerArg && !Object.hasOwn(TYPE_CHECKERS, checkerArg)) {
+			logger.error(`Unknown type checker ${colors.cyan(checkerArg)}. Expected one of: ${CHECKER_PRIORITY.join(", ")}.`);
+			process.exitCode = 1;
+			return;
+		}
+		const [supportsProjects, typechecker] = await Promise.all([
+			readTSConfig(cwd).then((config) => !!config.references?.length),
+			resolveTypeChecker(cwd, checkerArg),
+			writeTypes(cwd, ctx.args.dotenv, ctx.args.logLevel, {
+				...ctx.data?.overrides,
+				...ctx.args.extends && { extends: ctx.args.extends }
+			})
+		]);
+		if (!typechecker) {
+			process.exitCode = 1;
+			return;
+		}
+		const start = Date.now();
+		const result = await x(typechecker.bin, TYPE_CHECKERS[typechecker.checker].args(supportsProjects), { nodeOptions: {
+			stdio: "inherit",
+			cwd
+		} });
+		const duration = `${Date.now() - start}ms`;
+		if (result.exitCode === 0) {
+			if (hasTTY) logger.success(`Type check passed in ${colors.cyan(duration)}.`);
+			return;
+		}
+		if (hasTTY) logger.error(`Type check failed in ${colors.cyan(duration)}.`);
+		process.exitCode = result.exitCode ?? 1;
+	}
+});
+async function resolveTypeChecker(cwd, preferred) {
+	const priority = preferred ? [preferred] : detectCheckerPriority(cwd);
+	for (const checker of priority) {
+		const resolved = TYPE_CHECKERS[checker].resolve(cwd);
+		if (resolved.bin && resolved.missing.length === 0) {
+			await TYPE_CHECKERS[checker].ensureConfig?.(cwd);
+			return {
+				checker,
+				bin: resolved.bin
+			};
+		}
+	}
+	return await promptTypeCheckerInstall(cwd, preferred);
+}
+function detectCheckerPriority(cwd) {
+	const configured = CHECKER_PRIORITY.filter((checker) => hasCheckerConfig(checker, cwd));
+	return [...configured, ...CHECKER_PRIORITY.filter((checker) => !configured.includes(checker))];
+}
+function hasCheckerConfig(checker, cwd) {
+	return TYPE_CHECKERS[checker].configFiles?.some((file) => existsSync(resolve(cwd, file))) ?? false;
+}
+function resolveGolarBin(cwd) {
+	const entry = resolveModulePath("golar/unstable", {
+		from: withNodePath(cwd),
+		try: true
+	});
+	if (!entry) return;
+	let dir = dirname(entry);
+	while (true) {
+		const manifest = resolve(dir, "package.json");
+		if (existsSync(manifest)) {
+			const { name, bin } = JSON.parse(readFileSync(manifest, "utf8"));
+			if (name === "golar") {
+				const relativeBin = typeof bin === "string" ? bin : bin?.golar;
+				return relativeBin ? resolve(dir, relativeBin) : void 0;
+			}
+		}
+		const parent = dirname(dir);
+		if (parent === dir) return;
+		dir = parent;
+	}
+}
+async function ensureGolarConfig(cwd) {
+	if (hasCheckerConfig("golar", cwd)) return;
+	const filename = (await readPackageJSON(cwd).catch(() => null))?.type === "module" ? "golar.config.ts" : "golar.config.mts";
+	await writeFile(resolve(cwd, filename), GOLAR_CONFIG_TEMPLATE);
+	logger.info(`Created ${colors.cyan(filename)}`);
+}
+async function promptTypeCheckerInstall(cwd, preferred) {
+	const packageManager = await detectPackageManager(cwd, { includeParentDirs: true });
+	const pmName = packageManager?.name ?? "npm";
+	const devFlag = pmName === "bun" ? "-d" : "-D";
+	const pmCommand = packageManager?.command ?? pmName;
+	if (!hasTTY) {
+		printInstallInstructions(pmCommand, devFlag, preferred ? [preferred] : CHECKER_PRIORITY);
+		return;
+	}
+	let selected = preferred;
+	if (!selected) {
+		logger.warn(`No type checker found for ${colors.cyan("nuxt typecheck")}.`);
+		const answer = await select({
+			message: "Which type checker would you like to use?",
+			options: CHECKER_PRIORITY.map((name) => ({
+				value: name,
+				label: TYPE_CHECKERS[name].label,
+				hint: TYPE_CHECKERS[name].hint
+			})),
+			initialValue: "vue-tsc"
+		});
+		if (isCancel(answer)) {
+			cancel("Skipping installation.");
+			return;
+		}
+		selected = answer;
+	}
+	const installCommand = formatInstallCommand(selected, pmCommand, devFlag);
+	const { missing } = TYPE_CHECKERS[selected].resolve(cwd);
+	if (missing.length > 0) {
+		if (!await installMissingPackages({
+			cwd,
+			packageManager,
+			pmName,
+			packages: missing,
+			installCommand
+		})) return;
+	}
+	const resolved = TYPE_CHECKERS[selected].resolve(cwd, { cache: false });
+	if (!resolved.bin) {
+		logger.error(`Failed to resolve ${colors.cyan(selected)} after installation. Please check your installation.`);
+		return;
+	}
+	await TYPE_CHECKERS[selected].ensureConfig?.(cwd);
+	return {
+		checker: selected,
+		bin: resolved.bin
+	};
+}
+function printInstallInstructions(pmCommand, devFlag, checkers) {
+	logger.error(`A type checker is required for ${colors.cyan("nuxt typecheck")}. Install ${checkers.length > 1 ? "one of the following" : "it as a devDependency"}:\n`);
+	for (const checker of checkers) {
+		const meta = TYPE_CHECKERS[checker];
+		const command = formatInstallCommand(checker, pmCommand, devFlag);
+		const docs = meta.docs ? ` (see ${colors.cyan(meta.docs)})` : "";
+		logger.info(`${colors.cyan(meta.label)}${docs}:\n\n  ${colors.bold(command)}\n`);
+		if (meta.configNote) logger.info(`${meta.configNote}\n`);
+	}
+}
+function formatInstallCommand(checker, pmCommand, devFlag) {
+	return `${pmCommand} add ${devFlag} ${TYPE_CHECKERS[checker].packages.join(" ")}`;
+}
+async function installMissingPackages(options) {
+	const { cwd, packageManager, pmName, packages, installCommand } = options;
+	const list = packages.map((name) => colors.cyan(name)).join(" and ");
+	const plural = packages.length > 1;
+	const shouldInstall = await confirm({
+		message: `Install ${list} as ${plural ? "devDependencies" : "a devDependency"}?`,
+		initialValue: true
+	});
+	if (isCancel(shouldInstall) || !shouldInstall) {
+		cancel(`Skipping installation. Run ${colors.bold(installCommand)} to install manually.`);
+		return false;
+	}
+	const spin = spinner();
+	spin.start(`Installing ${list} with ${colors.cyan(pmName)}`);
+	try {
+		await addDevDependency(packages, {
+			cwd,
+			packageManager,
+			silent: true
+		});
+		spin.stop(`Installed ${list}`);
+		return true;
+	} catch (error) {
+		spin.error(`Failed to install ${list}`);
+		logger.error(error instanceof Error ? error.message : String(error));
+		logger.info(`You can install ${plural ? "them" : "it"} manually with:\n\n  ${colors.bold(installCommand)}\n`);
+		return false;
+	}
+}
+async function writeTypes(cwd, dotenv, logLevel, overrides) {
+	const { loadNuxt, buildNuxt, writeTypes } = await loadKit(cwd);
+	const nuxt = await loadNuxt({
+		cwd,
+		dotenv: {
+			cwd,
+			fileName: dotenv
+		},
+		overrides: {
+			_prepare: true,
+			logLevel,
+			...overrides
+		}
+	});
+	await writeTypes(nuxt);
+	await buildNuxt(nuxt);
+	await nuxt.close();
+}
+//#endregion
+export { typecheck_default as default };

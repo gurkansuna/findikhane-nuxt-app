@@ -1,0 +1,59 @@
+{
+  "name": "structured-clone-es",
+  "type": "module",
+  "version": "2.0.1",
+  "description": "An env-agnostic serializer and deserializer with recursion ability and types beyond JSON, based on the HTML structured clone algorithm.",
+  "author": "Andrea Giammarchi",
+  "license": "ISC",
+  "homepage": "https://github.com/antfu-collective/structured-clone-es#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antfu-collective/structured-clone-es.git"
+  },
+  "bugs": "https://github.com/antfu-collective/structured-clone-es/issues",
+  "keywords": [
+    "structured-clone",
+    "serialize",
+    "deserialize"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@antfu/eslint-config": "^9.2.0",
+    "@antfu/ni": "^30.3.0",
+    "@antfu/utils": "^9.3.0",
+    "@types/node": "^26.1.2",
+    "@vitest/coverage-v8": "3.2.4",
+    "bumpp": "^12.1.1",
+    "eslint": "^10.8.0",
+    "lint-staged": "^17.2.0",
+    "pnpm": "^11.17.0",
+    "simple-git-hooks": "^2.13.1",
+    "tsdown": "^0.22.14",
+    "tsx": "^4.23.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged"
+  },
+  "lint-staged": {
+    "*": "eslint --fix"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "test": "vitest",
+    "lint": "eslint .",
+    "release": "bumpp",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  }
+}

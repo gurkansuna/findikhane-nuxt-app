@@ -1,0 +1,1 @@
+import{W as e,X as t,_ as n}from"./vendor/json-editor-vue-ajxjng9j.js";import{t as r}from"./_plugin-vue_export-helper-d9irwgla.js";var i={},a={"h-full":``,"of-auto":``};function o(r,i){return e(),n(`div`,a,[t(r.$slots,`default`)])}var s=r(i,[[`render`,o]]);export{s as default};

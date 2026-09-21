@@ -1,0 +1,66 @@
+{
+  "name": "stylehacks",
+  "version": "8.0.4",
+  "description": "Detect/remove browser hacks from CSS files.",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/*": "./src/*.js",
+    "./src/*.js": "./src/*.js",
+    "./package.json": "./package.json"
+  },
+  "imports": {
+    "#getBrowsersList": {
+      "node": "./src/lib/computeBrowsersToSupport.js",
+      "default": "./src/lib/getBrowsersForWebBuild.js"
+    }
+  },
+  "files": [
+    "LICENSE-MIT",
+    "src",
+    "types"
+  ],
+  "keywords": [
+    "browsers",
+    "css",
+    "hack",
+    "hacks",
+    "optimise",
+    "postcss",
+    "postcss-plugin",
+    "stylehacks"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/cssnano/cssnano",
+  "author": {
+    "name": "Ben Briggs",
+    "email": "beneb.info@gmail.com",
+    "url": "https://beneb.info"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cssnano/cssnano.git"
+  },
+  "dependencies": {
+    "browserslist": "^4.28.8",
+    "postcss-selector-parser": "^7.1.5"
+  },
+  "bugs": {
+    "url": "https://github.com/cssnano/cssnano/issues"
+  },
+  "engines": {
+    "node": "^22.11.0 || ^24.11.0 || >=26.0"
+  },
+  "devDependencies": {
+    "postcss": "^8.5.26"
+  },
+  "peerDependencies": {
+    "postcss": "^8.5.26"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}

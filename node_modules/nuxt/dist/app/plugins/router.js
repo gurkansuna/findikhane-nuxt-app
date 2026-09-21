@@ -1,0 +1,198 @@
+import { defineNuxtPlugin, useRuntimeConfig } from "../nuxt.js";
+import { navigationDiagnostics } from "../diagnostics/navigation.js";
+import { navigateTo } from "../composables/router.js";
+import { clearError, showError } from "../composables/error.js";
+import { getRouteRules } from "../composables/manifest.js";
+import { computed, defineComponent, h, isReadonly, reactive } from "vue";
+import { createError } from "@nuxt/nitro-server/h3";
+import { isEqual, joinURL, parseQuery, stringifyParsedURL, stringifyQuery, withoutBase } from "ufo";
+import { globalMiddleware } from "#build/middleware";
+//#region src/app/plugins/router.ts
+function getRouteFromPath(fullPath) {
+	const route = fullPath && typeof fullPath === "object" ? fullPath : {};
+	if (typeof fullPath === "object") fullPath = stringifyParsedURL({
+		pathname: fullPath.path || "",
+		search: stringifyQuery(fullPath.query || {}),
+		hash: fullPath.hash || ""
+	});
+	const url = new URL(fullPath.toString(), import.meta.client ? window.location.href : "http://localhost");
+	return {
+		path: url.pathname,
+		fullPath,
+		query: parseQuery(url.search),
+		hash: url.hash,
+		params: route.params || {},
+		name: void 0,
+		matched: route.matched || [],
+		redirectedFrom: void 0,
+		meta: route.meta || {},
+		href: fullPath
+	};
+}
+const plugin = /* @__PURE__ */ defineNuxtPlugin({
+	name: "nuxt:router",
+	enforce: "pre",
+	setup(nuxtApp) {
+		const initialURL = import.meta.client ? withoutBase(window.location.pathname, (/* @__PURE__ */ useRuntimeConfig()).app.baseURL) + window.location.search + window.location.hash : nuxtApp.ssrContext.url;
+		const routes = [];
+		const hooks = {
+			"navigate:before": [],
+			"resolve:before": [],
+			"navigate:after": [],
+			"error": []
+		};
+		const registerHook = (hook, guard) => {
+			hooks[hook].push(guard);
+			return () => {
+				const index = hooks[hook].indexOf(guard);
+				if (index !== -1) hooks[hook].splice(index, 1);
+			};
+		};
+		const baseURL = (/* @__PURE__ */ useRuntimeConfig()).app.baseURL;
+		const route = reactive(getRouteFromPath(initialURL));
+		let navigationCounter = 0;
+		async function handleNavigation(url, replace) {
+			const navigationId = ++navigationCounter;
+			try {
+				const to = getRouteFromPath(url);
+				for (const middleware of hooks["navigate:before"]) {
+					const result = await middleware(to, route);
+					if (navigationId !== navigationCounter) return;
+					if (result === false || result instanceof Error) return;
+					if (typeof result === "string" && result.length) return await handleNavigation(result, true);
+				}
+				for (const handler of hooks["resolve:before"]) {
+					await handler(to, route);
+					if (navigationId !== navigationCounter) return;
+				}
+				Object.assign(route, to);
+				if (import.meta.client) {
+					window.history[replace ? "replaceState" : "pushState"]({}, "", joinURL(baseURL, to.fullPath));
+					if (!nuxtApp.isHydrating) await nuxtApp.runWithContext(clearError);
+				}
+				for (const middleware of hooks["navigate:after"]) await middleware(to, route);
+			} catch (err) {
+				if (import.meta.dev && !hooks.error.length) navigationDiagnostics.NUXT_E2009({ cause: err });
+				for (const handler of hooks.error) await handler(err);
+			}
+		}
+		const router = {
+			currentRoute: computed(() => route),
+			isReady: () => Promise.resolve(),
+			options: {},
+			install: () => Promise.resolve(),
+			push: (url) => handleNavigation(url, false),
+			replace: (url) => handleNavigation(url, true),
+			back: () => window.history.go(-1),
+			go: (delta) => window.history.go(delta),
+			forward: () => window.history.go(1),
+			beforeResolve: (guard) => registerHook("resolve:before", guard),
+			beforeEach: (guard) => registerHook("navigate:before", guard),
+			afterEach: (guard) => registerHook("navigate:after", guard),
+			onError: (handler) => registerHook("error", handler),
+			resolve: getRouteFromPath,
+			addRoute: (parentName, route) => {
+				routes.push(route);
+			},
+			getRoutes: () => routes,
+			hasRoute: (name) => routes.some((route) => route.name === name),
+			removeRoute: (name) => {
+				const index = routes.findIndex((route) => route.name === name);
+				if (index !== -1) routes.splice(index, 1);
+			}
+		};
+		nuxtApp.vueApp.component("RouterLink", defineComponent({
+			functional: true,
+			props: {
+				to: {
+					type: String,
+					required: true
+				},
+				custom: Boolean,
+				replace: Boolean,
+				activeClass: String,
+				exactActiveClass: String,
+				ariaCurrentValue: String
+			},
+			setup: (props, { slots }) => {
+				const navigate = () => handleNavigation(props.to, props.replace);
+				return () => {
+					const route = router.resolve(props.to);
+					return props.custom ? slots.default?.({
+						href: props.to,
+						navigate,
+						route
+					}) : h("a", {
+						href: props.to,
+						onClick: (e) => {
+							e.preventDefault();
+							return navigate();
+						}
+					}, slots);
+				};
+			}
+		}));
+		if (import.meta.client) window.addEventListener("popstate", (event) => {
+			const location = event.target.location;
+			router.replace(location.href.replace(location.origin, ""));
+		});
+		nuxtApp._route = route;
+		nuxtApp._middleware ||= {
+			global: [],
+			named: {}
+		};
+		const initialLayout = nuxtApp.payload.state._layout;
+		const initialLayoutProps = nuxtApp.payload.state._layoutProps;
+		nuxtApp.hooks.hookOnce("app:created", async () => {
+			router.beforeEach(async (to, from) => {
+				to.meta = reactive(to.meta || {});
+				if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
+					to.meta.layout = initialLayout;
+					to.meta.layoutProps = initialLayoutProps;
+				}
+				nuxtApp._processingMiddleware = true;
+				if (import.meta.server) nuxtApp._middlewareTo = to;
+				if (import.meta.client || !nuxtApp.ssrContext?.islandContext) {
+					const middlewareEntries = /* @__PURE__ */ new Set([...globalMiddleware, ...nuxtApp._middleware.global]);
+					const routeRules = getRouteRules({ path: to.path });
+					if (routeRules.appMiddleware) for (const key in routeRules.appMiddleware) {
+						const guard = nuxtApp._middleware.named[key];
+						if (!guard) continue;
+						if (routeRules.appMiddleware[key]) middlewareEntries.add(guard);
+						else middlewareEntries.delete(guard);
+					}
+					for (const middleware of middlewareEntries) {
+						if (import.meta.dev) nuxtApp._processingMiddleware = middleware._path || true;
+						const result = await nuxtApp.runWithContext(() => middleware(to, from));
+						if (import.meta.server) {
+							if (result === false || result instanceof Error) {
+								const error = result || createError({
+									status: 404,
+									statusText: `Page Not Found: ${initialURL}`,
+									data: { path: initialURL }
+								});
+								delete nuxtApp._processingMiddleware;
+								delete nuxtApp._middlewareTo;
+								return nuxtApp.runWithContext(() => showError(error));
+							}
+						}
+						if (result === true) continue;
+						if (result || result === false) return result;
+					}
+				}
+			});
+			router.afterEach(() => {
+				delete nuxtApp._processingMiddleware;
+				if (import.meta.server) delete nuxtApp._middlewareTo;
+			});
+			await router.replace(initialURL);
+			if (!isEqual(route.fullPath, initialURL)) await nuxtApp.runWithContext(() => navigateTo(route.fullPath));
+		});
+		return { provide: {
+			route,
+			router
+		} };
+	}
+});
+//#endregion
+export { plugin as default };

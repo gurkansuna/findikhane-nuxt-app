@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 220" role="img" aria-label="Taş fırında kavrulmuş fındık illüstrasyonu">
+  <defs>
+    <linearGradient id="kavNut" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9c6a35"/>
+      <stop offset="1" stop-color="#6d451f"/>
+    </linearGradient>
+    <linearGradient id="kavNutBack" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#89592c"/>
+      <stop offset="1" stop-color="#5e3a19"/>
+    </linearGradient>
+    <linearGradient id="kavInner" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4e2b6"/>
+      <stop offset="1" stop-color="#e0bd80"/>
+    </linearGradient>
+  </defs>
+
+  <ellipse cx="120" cy="196" rx="78" ry="14" fill="#12352f" opacity="0.16"/>
+
+  <!-- steam wisp -->
+  <g opacity="0.5" stroke="#eadcc2" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M158 18 C 152 10 164 6 160 -2"/>
+    <path d="M170 24 C 164 16 176 12 172 4"/>
+  </g>
+
+  <!-- back nut -->
+  <g transform="translate(152,90) rotate(10)">
+    <path d="M0 -46 C 22 -46 36 -24 36 -2 C 36 24 20 46 0 46 C -20 46 -36 24 -36 -2 C -36 -24 -22 -46 0 -46 Z" fill="url(#kavNutBack)"/>
+    <path d="M0 -46 C 14 -46 24 -34 30 -18" fill="none" stroke="#c99a5f" stroke-width="2.4" stroke-linecap="round" opacity="0.5"/>
+  </g>
+
+  <!-- whole roasted nut, front-left -->
+  <g transform="translate(78,112) rotate(-12)">
+    <path d="M0 -50 C 24 -50 39 -26 39 -2 C 39 26 22 50 0 50 C -22 50 -39 26 -39 -2 C -39 -26 -24 -50 0 -50 Z" fill="url(#kavNut)"/>
+    <path d="M0 -50 C 15 -50 26 -37 32 -20" fill="none" stroke="#c9a068" stroke-width="3" stroke-linecap="round" opacity="0.55"/>
+    <path d="M0 -44 C -6 -20 -6 20 0 44" fill="none" stroke="#4a2d13" stroke-width="1.6" opacity="0.45"/>
+    <!-- roast speckles -->
+    <circle cx="-10" cy="-6" r="2.2" fill="#3f2712" opacity="0.4"/>
+    <circle cx="8" cy="10" r="1.8" fill="#3f2712" opacity="0.4"/>
+    <circle cx="-4" cy="22" r="1.6" fill="#3f2712" opacity="0.35"/>
+  </g>
+
+  <!-- cracked-open nut, front-right, showing interior -->
+  <g transform="translate(150,134) rotate(8)">
+    <path d="M-2 -48 C -20 -46 -37 -24 -37 -2 C -37 22 -24 42 -6 48 L -3 -2 Z" fill="url(#kavNut)"/>
+    <path d="M2 -48 C 20 -46 37 -24 37 -2 C 37 22 24 42 6 48 L 3 -2 Z" fill="url(#kavNut)"/>
+    <path d="M-5 -6 C -9 4 -7 16 0 24 C 7 16 9 4 5 -6 C 2 -10 -2 -10 -5 -6 Z" fill="url(#kavInner)"/>
+    <path d="M-2 -48 L -3 -2 L -6 48" fill="none" stroke="#40260f" stroke-width="1.4" opacity="0.5"/>
+    <path d="M2 -48 L 3 -2 L 6 48" fill="none" stroke="#40260f" stroke-width="1.4" opacity="0.5"/>
+    <!-- crumbs -->
+    <circle cx="20" cy="54" r="2.4" fill="#7a5027"/>
+    <circle cx="30" cy="58" r="1.6" fill="#7a5027"/>
+    <circle cx="-24" cy="56" r="1.8" fill="#7a5027"/>
+  </g>
+</svg>

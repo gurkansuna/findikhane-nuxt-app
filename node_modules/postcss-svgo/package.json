@@ -1,0 +1,61 @@
+{
+  "name": "postcss-svgo",
+  "version": "8.0.6",
+  "description": "Optimise inline SVG with PostCSS.",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/index": "./src/index.js",
+    "./src/index.js": "./src/index.js",
+    "./src/lib/url": "./src/lib/url.js",
+    "./src/lib/url.js": "./src/lib/url.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "LICENSE-MIT",
+    "src",
+    "types"
+  ],
+  "keywords": [
+    "css",
+    "minify",
+    "optimise",
+    "postcss",
+    "postcss-plugin",
+    "svg",
+    "svgo"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/cssnano/cssnano",
+  "author": {
+    "name": "Ben Briggs",
+    "email": "beneb.info@gmail.com",
+    "url": "https://beneb.info"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cssnano/cssnano.git"
+  },
+  "dependencies": {
+    "postcss-value-parser": "^4.2.0",
+    "svgo": "^4.1.0"
+  },
+  "bugs": {
+    "url": "https://github.com/cssnano/cssnano/issues"
+  },
+  "engines": {
+    "node": "^22.11.0 || ^24.11.0 || >=26.0"
+  },
+  "devDependencies": {
+    "postcss": "^8.5.26"
+  },
+  "peerDependencies": {
+    "postcss": "^8.5.26"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}

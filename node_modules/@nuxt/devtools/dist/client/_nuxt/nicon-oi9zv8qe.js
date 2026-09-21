@@ -1,0 +1,1 @@
+import{Qt as e,T as t,W as n,_ as r}from"./vendor/json-editor-vue-ajxjng9j.js";var i=Object.assign(t({__name:`NIcon`,props:{icon:{}},setup(t){return(i,a)=>(n(),r(`div`,{class:e([`n-icon`,t.icon])},null,2))}}),{__name:`NIcon`});export{i as t};

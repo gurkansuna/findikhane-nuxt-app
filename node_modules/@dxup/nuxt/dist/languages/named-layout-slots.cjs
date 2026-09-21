@@ -1,0 +1,84 @@
+require("@vue/compiler-dom");
+let pathe = require("pathe");
+//#region src/module/named-layout-slots/utils.ts
+function isInDir(path, dir) {
+	const rel = (0, pathe.relative)(dir, path);
+	return rel !== ".." && !rel.startsWith("../") && !(0, pathe.isAbsolute)(rel);
+}
+//#endregion
+//#region src/module/named-layout-slots/language.ts
+const resolvedAsts = /* @__PURE__ */ new WeakSet();
+const plugin = ({ modules: { typescript: ts, "@vue/compiler-dom": CompilerDOM }, config: { options } }) => ({
+	version: 2.2,
+	order: -1,
+	resolveEmbeddedCode(fileName, sfc, embeddedCode) {
+		if (!embeddedCode.id.startsWith("script_")) return;
+		if (!options.dirs.some((dir) => isInDir(fileName, dir))) return;
+		if (!sfc.template?.ast || resolvedAsts.has(sfc.template.ast)) return;
+		resolvedAsts.add(sfc.template.ast);
+		let layoutName = "default";
+		if (sfc.scriptSetup) visit(sfc.scriptSetup.ast);
+		function visit(node) {
+			if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === "definePageMeta" && node.arguments.length && ts.isObjectLiteralExpression(node.arguments[0])) {
+				for (const prop of node.arguments[0].properties) if (ts.isPropertyAssignment(prop) && ts.isIdentifier(prop.name) && prop.name.text === "layout") {
+					if (ts.isStringLiteralLike(prop.initializer)) layoutName = prop.initializer.text;
+					else if (ts.isObjectLiteralExpression(prop.initializer)) {
+						for (const sub of prop.initializer.properties) if (ts.isPropertyAssignment(sub) && ts.isIdentifier(sub.name) && sub.name.text === "name" && ts.isStringLiteralLike(sub.initializer)) {
+							layoutName = sub.initializer.text;
+							break;
+						}
+					}
+					break;
+				}
+			} else ts.forEachChild(node, visit);
+		}
+		const expression = `\n// @ts-ignore\n{} as import("#build/dxup/layouts").Layouts["${layoutName}"]\n`;
+		const children = sfc.template.ast.children;
+		sfc.template.ast.children = [{
+			type: CompilerDOM.NodeTypes.ELEMENT,
+			ns: CompilerDOM.Namespaces.HTML,
+			tag: "component",
+			tagType: CompilerDOM.ElementTypes.COMPONENT,
+			loc: createVirtualLoc(),
+			props: [{
+				type: CompilerDOM.NodeTypes.DIRECTIVE,
+				name: "bind",
+				arg: {
+					type: CompilerDOM.NodeTypes.SIMPLE_EXPRESSION,
+					content: "is",
+					isStatic: true,
+					constType: CompilerDOM.ConstantTypes.CAN_STRINGIFY,
+					loc: createVirtualLoc("is")
+				},
+				exp: {
+					type: CompilerDOM.NodeTypes.SIMPLE_EXPRESSION,
+					content: expression,
+					isStatic: false,
+					constType: CompilerDOM.ConstantTypes.NOT_CONSTANT,
+					loc: createVirtualLoc(expression)
+				},
+				modifiers: [],
+				loc: createVirtualLoc(`:is="${expression}"`)
+			}],
+			children,
+			codegenNode: void 0
+		}];
+	}
+});
+function createVirtualLoc(source = "") {
+	return {
+		start: {
+			line: Number.MAX_VALUE,
+			column: Number.MAX_VALUE,
+			offset: Number.MAX_VALUE
+		},
+		end: {
+			line: Number.MAX_VALUE,
+			column: Number.MAX_VALUE,
+			offset: Number.MAX_VALUE
+		},
+		source
+	};
+}
+//#endregion
+module.exports = plugin;

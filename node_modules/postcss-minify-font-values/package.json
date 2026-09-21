@@ -1,0 +1,53 @@
+{
+  "name": "postcss-minify-font-values",
+  "version": "8.0.4",
+  "description": "Minify font declarations with PostCSS",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/lib/*": "./src/lib/*.js",
+    "./src/lib/*.js": "./src/lib/*.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "LICENSE",
+    "types"
+  ],
+  "author": "Bogdan Chadkin <trysound@yandex.ru>",
+  "license": "MIT",
+  "keywords": [
+    "css",
+    "font",
+    "font-family",
+    "font-weight",
+    "optimise",
+    "postcss-plugin"
+  ],
+  "dependencies": {
+    "postcss-value-parser": "^4.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cssnano/cssnano.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cssnano/cssnano/issues"
+  },
+  "homepage": "https://github.com/cssnano/cssnano",
+  "engines": {
+    "node": "^22.11.0 || ^24.11.0 || >=26.0"
+  },
+  "devDependencies": {
+    "postcss": "^8.5.26"
+  },
+  "peerDependencies": {
+    "postcss": "^8.5.26"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}

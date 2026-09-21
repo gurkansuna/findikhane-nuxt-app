@@ -1,0 +1,47 @@
+{
+  "name": "@dxup/nuxt",
+  "type": "module",
+  "version": "0.5.10",
+  "description": "TypeScript plugin for Nuxt",
+  "author": "KazariEX",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KazariEX/dxup.git",
+    "directory": "packages/nuxt"
+  },
+  "exports": {
+    ".": "./dist/module.mjs",
+    "./languages/*": "./dist/languages/*",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/typescript.cjs",
+  "types": "./dist/typescript.d.cts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@dxup/unimport": "^0.1.2",
+    "@nuxt/kit": "^4.5.2",
+    "@vue/compiler-dom": "^3.5.41",
+    "chokidar": "^5.0.0",
+    "knitwork": "^1.3.0",
+    "magic-string": "^1.2.2",
+    "pathe": "^2.0.3",
+    "tinyglobby": "^0.2.17",
+    "unplugin": "^3.3.0"
+  },
+  "devDependencies": {
+    "@dxup/shared": "0.0.0",
+    "@volar/language-core": "^2.4.28",
+    "@volar/typescript": "^2.4.28",
+    "@vue/language-core": "^3.3.11",
+    "nuxt": "^4.5.2",
+    "typescript": "?=6.0.3"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown -w --sourcemap",
+    "release": "node ../../scripts/release.ts"
+  }
+}

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 220" role="img" aria-label="Fındık ezmesi kavanozu illüstrasyonu">
+  <defs>
+    <linearGradient id="jarGlass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbf6ec"/>
+      <stop offset="1" stop-color="#f0e6d2"/>
+    </linearGradient>
+    <linearGradient id="spreadFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a3652f"/>
+      <stop offset="1" stop-color="#7c4620"/>
+    </linearGradient>
+  </defs>
+
+  <ellipse cx="118" cy="198" rx="70" ry="13" fill="#12352f" opacity="0.16"/>
+
+  <!-- spoon leaning behind jar -->
+  <g transform="translate(184,70) rotate(28)">
+    <rect x="-4" y="0" width="8" height="88" rx="4" fill="#c99a5f"/>
+    <ellipse cx="0" cy="-8" rx="15" ry="20" fill="#c99a5f"/>
+    <ellipse cx="0" cy="-10" rx="10" ry="13" fill="#8a4f24"/>
+  </g>
+
+  <!-- jar body -->
+  <g>
+    <path d="M60 92 C60 84 66 80 76 78 L162 78 C172 80 178 84 178 92 L182 176 C182 190 168 200 148 200 L92 200 C72 200 58 190 58 176 Z" fill="url(#jarGlass)" stroke="#d8c9a6" stroke-width="2"/>
+    <!-- spread fill inside jar -->
+    <path d="M66 118 C 90 112 150 112 174 118 L178 176 C178 188 166 196 148 196 L92 196 C74 196 62 188 62 176 Z" fill="url(#spreadFill)"/>
+    <path d="M66 118 C 90 111 150 111 174 118" fill="none" stroke="#c99a5f" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+    <!-- glass shine -->
+    <path d="M70 96 C 68 128 68 160 78 190" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity="0.35"/>
+  </g>
+
+  <!-- neck + lid -->
+  <rect x="86" y="60" width="66" height="22" rx="6" fill="#e7d8b6"/>
+  <g>
+    <rect x="78" y="34" width="82" height="30" rx="9" fill="#12352f"/>
+    <rect x="78" y="34" width="82" height="9" rx="4.5" fill="#1c493f"/>
+  </g>
+
+  <!-- dollop on top of lid -->
+  <path d="M104 34 C 100 20 118 14 122 26 C 130 18 144 24 140 34 Z" fill="url(#spreadFill)"/>
+  <path d="M110 26 C 114 20 122 20 122 26" fill="none" stroke="#c99a5f" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+
+  <!-- label -->
+  <rect x="82" y="118" width="76" height="52" rx="6" fill="#f9f4e9" stroke="#eadcc2" stroke-width="1.5"/>
+  <text x="120" y="138" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-weight="700" font-size="13" fill="#193d36">fındık</text>
+  <text x="120" y="154" text-anchor="middle" font-family="'DM Sans', Arial, sans-serif" font-weight="600" font-size="9" letter-spacing="1" fill="#b44e2d">EZMESİ</text>
+  <line x1="94" y1="160" x2="146" y2="160" stroke="#eadcc2" stroke-width="1.5"/>
+  <text x="120" y="167" text-anchor="middle" font-family="'DM Sans', Arial, sans-serif" font-size="6.5" letter-spacing="1.5" fill="#8a7a5c">%100 FINDIK</text>
+
+  <!-- garnish nuts at base -->
+  <g transform="translate(48,190)">
+    <ellipse cx="0" cy="0" rx="11" ry="13" fill="#9c6a35"/>
+    <path d="M0 -13 C 4 -13 7 -9 8 -5" fill="none" stroke="#c9a068" stroke-width="1.6" opacity="0.6"/>
+  </g>
+  <g transform="translate(194,186) rotate(12)">
+    <ellipse cx="0" cy="0" rx="10" ry="12" fill="#a5723c"/>
+    <path d="M0 -12 C 4 -12 6 -8 7 -4" fill="none" stroke="#c9a068" stroke-width="1.4" opacity="0.6"/>
+  </g>
+</svg>

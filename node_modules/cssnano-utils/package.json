@@ -1,0 +1,42 @@
+{
+  "name": "cssnano-utils",
+  "version": "6.0.4",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cssnano/cssnano.git"
+  },
+  "description": "Utility methods and plugin for cssnano projects",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./src": "./src/index.js",
+    "./src/*": "./src/*.js",
+    "./src/*.js": "./src/*.js",
+    "./package.json": "./package.json"
+  },
+  "homepage": "https://github.com/cssnano/cssnano",
+  "bugs": {
+    "url": "https://github.com/cssnano/cssnano/issues"
+  },
+  "engines": {
+    "node": "^22.11.0 || ^24.11.0 || >=26.0"
+  },
+  "files": [
+    "src",
+    "LICENSE",
+    "types"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "postcss": "^8.5.26",
+    "postcss-value-parser": "^4.2.0"
+  },
+  "peerDependencies": {
+    "postcss": "^8.5.26"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
