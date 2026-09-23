@@ -1,4 +1,7 @@
-const catalog = {
+// Sabit değerler yalnızca ağ isteği başarısız olursa kullanılan yedek (fallback)
+// fiyatlardır. Gerçek/güncel fiyat tek kaynaktan (server/lib/catalog.ts) gelir ve
+// aşağıdaki loadCatalog() ile /api/products üzerinden sayfaya yansıtılır.
+let catalog = {
   "giresun-secme": { name: "Ordu ve Giresun Seçme", price: 1049 },
   "tas-firin-kavrulmus": { name: "Taş Fırın Kavrulmuş", price: 1149 },
   "ipek-kivam": { name: "İpek Kıvam", price: 949 }
@@ -47,6 +50,25 @@ function renderCart() {
         <button type="button" data-cart-action="increase" data-product-id="${item.id}" aria-label="Bir artır">+</button>
       </div>
     </div>`).join("");
+}
+
+// Vitrindeki (sepet dışı) ₺ etiketlerini /api/products'tan gelen güncel
+// fiyatla değiştirir. Ağ isteği başarısız olursa yukarıdaki sabit fallback
+// fiyatlarla (ve sayfanın sunucu tarafında render edilmiş metniyle) devam edilir.
+function applyCatalog(products) {
+  catalog = Object.fromEntries(products.map((product) => [product.id, { name: product.name, price: product.price }]));
+  document.querySelectorAll("[data-price-for]").forEach((element) => {
+    const product = catalog[element.dataset.priceFor];
+    if (product) element.textContent = formatPrice(product.price);
+  });
+  renderCart();
+}
+
+function loadCatalog() {
+  fetch("/api/products")
+    .then((response) => (response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`))))
+    .then(applyCatalog)
+    .catch((error) => console.warn("Güncel fiyatlar alınamadı, yedek fiyatlar kullanılıyor.", error));
 }
 
 function openCart() {
@@ -122,3 +144,4 @@ document.querySelector("#newsletter-form").addEventListener("submit", (event) =>
 });
 
 renderCart();
+loadCatalog();
