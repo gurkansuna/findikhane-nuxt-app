@@ -1,0 +1,4 @@
+# Secrets - asla commit edilmesin
+.env
+.env.*
+!.env.example
