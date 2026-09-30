@@ -54,7 +54,8 @@ export default defineEventHandler(async (event) => {
       cart,
       conversationId,
       total,
-      paymentStatus: "PENDING"
+      paymentStatus: "PENDING",
+      buyer
     });
 
     const address = {

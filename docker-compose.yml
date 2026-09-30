@@ -11,6 +11,7 @@ services:
       IYZICO_SECRET_KEY: ${IYZICO_SECRET_KEY:-}
       IYZICO_BASE_URL: ${IYZICO_BASE_URL:-https://sandbox-api.iyzipay.com}
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}
+      ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET:?ADMIN_SESSION_SECRET tanimlanmali - openssl rand -hex 32 ile uretebilirsiniz}
     depends_on:
       postgres:
         condition: service_healthy
