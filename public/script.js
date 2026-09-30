@@ -2,9 +2,9 @@
 // fiyatlardır. Gerçek/güncel fiyat tek kaynaktan (server/lib/catalog.ts) gelir ve
 // aşağıdaki loadCatalog() ile /api/products üzerinden sayfaya yansıtılır.
 let catalog = {
-  "giresun-secme": { name: "Ordu ve Giresun Seçme", price: 1099 },
-  "tas-firin-kavrulmus": { name: "Taş Fırın Kavrulmuş", price: 1199 },
-  "ipek-kivam": { name: "İpek Kıvam", price: 999 }
+  "giresun-secme": { name: "Ordu ve Giresun Seçme", price: 999 },
+  "tas-firin-kavrulmus": { name: "Taş Fırın Kavrulmuş", price: 1249 },
+  "ipek-kivam": { name: "İpek Kıvam", price: 949 }
 };
 
 const cart = new Map();

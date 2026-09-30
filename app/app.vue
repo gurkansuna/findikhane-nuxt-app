@@ -1,5 +1,5 @@
 <template>
-  <div class="topline">Ücretsiz kargo · 1.600 TL ve üzeri siparişlerde</div>
+  <div class="topline">Ücretsiz kargo · 1.500 TL ve üzeri siparişlerde</div>
   <header class="site-header">
     <a class="brand" href="#anasayfa" aria-label="Fındıkhane ana sayfa">
       <span class="brand-mark">F</span><span>fındıkhane</span>
@@ -57,7 +57,7 @@
             <div class="packaging"><b>fındık<br />hane</b><i>DOĞAL İÇ<br />FINDIK</i><small>ORDU VE GİRESUN</small></div>
             <img class="product-illustration" src="/images/findik-dogal.svg" alt="Doğal iç fındık illüstrasyonu" width="240" height="220" loading="lazy" />
           </div>
-          <div class="product-info"><div><p class="product-type">Çiğ iç fındık</p><h3>Ordu ve Giresun Seçme</h3></div><strong data-price-for="giresun-secme">₺1.099</strong></div>
+          <div class="product-info"><div><p class="product-type">Çiğ iç fındık</p><h3>Ordu ve Giresun Seçme</h3></div><strong data-price-for="giresun-secme">₺999</strong></div>
           <button class="add-button" data-product="Ordu ve Giresun Seçme" data-product-id="giresun-secme">Sepete ekle <span>+</span></button>
         </article>
         <article class="product-card">
@@ -65,7 +65,7 @@
             <div class="packaging light"><b>fındık<br />hane</b><i>KAVRULMUŞ<br />FINDIK</i><small>ORDU VE GİRESUN</small></div>
             <img class="product-illustration" src="/images/findik-kavrulmus.svg" alt="Taş fırında kavrulmuş fındık illüstrasyonu" width="240" height="220" loading="lazy" />
           </div>
-          <div class="product-info"><div><p class="product-type">Kavrulmuş iç fındık</p><h3>Taş Fırın Kavrulmuş</h3></div><strong data-price-for="tas-firin-kavrulmus">₺1.199</strong></div>
+          <div class="product-info"><div><p class="product-type">Kavrulmuş iç fındık</p><h3>Taş Fırın Kavrulmuş</h3></div><strong data-price-for="tas-firin-kavrulmus">₺1.249</strong></div>
           <button class="add-button" data-product="Taş Fırın Kavrulmuş" data-product-id="tas-firin-kavrulmus">Sepete ekle <span>+</span></button>
         </article>
         <article class="product-card">
@@ -73,7 +73,7 @@
             <div class="packaging dark"><b>fındık<br />hane</b><i>FINDIK<br />EZMESİ</i><small>%100 FINDIK</small></div>
             <img class="product-illustration" src="/images/findik-ezmesi.svg" alt="Fındık ezmesi kavanozu illüstrasyonu" width="240" height="220" loading="lazy" />
           </div>
-          <div class="product-info"><div><p class="product-type">Katkısız fındık ezmesi</p><h3>İpek Kıvam</h3></div><strong data-price-for="ipek-kivam">₺999</strong></div>
+          <div class="product-info"><div><p class="product-type">Katkısız fındık ezmesi</p><h3>İpek Kıvam</h3></div><strong data-price-for="ipek-kivam">₺949</strong></div>
           <button class="add-button" data-product="İpek Kıvam" data-product-id="ipek-kivam">Sepete ekle <span>+</span></button>
         </article>
       </div>
